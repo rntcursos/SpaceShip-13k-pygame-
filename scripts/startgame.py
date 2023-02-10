@@ -16,6 +16,8 @@ class StartGame:
         self.display = pygame.display.set_mode([WIDTH,HEIGHT])
         self.scene = "menu"
         self.current_scene = Menu()
+
+        self.fps = pygame.time.Clock()
     
     def run(self):
         
@@ -37,6 +39,7 @@ class StartGame:
                     sys.exit()
                 self.current_scene.events(event)
             
+            self.fps.tick(60)
             self.display.fill("black")
             self.current_scene.draw()
             self.current_scene.update()
