@@ -13,6 +13,8 @@ class Game(Scene):
         self.spaceship = SpaceShip("assets/nave/nave0.png",[600,600],[self.all_sprites])
     
     def update(self):
+        self.spaceship.shots.draw(self.display)
+        self.spaceship.shots.update()
         self.bg.update()
         self.spaceship.input()
         return super().update()
@@ -25,6 +27,8 @@ class SpaceShip(Obj):
 
         self.direction = pygame.math.Vector2()
         self.speed = 5
+
+        self.shots = pygame.sprite.Group()
 
     def input(self):
 
@@ -43,6 +47,9 @@ class SpaceShip(Obj):
             self.direction.x = 1
         else:
             self.direction.x = 0
+        
+        if key[pygame.K_SPACE]:
+            Shot("assets/nave/tiro.png",[self.rect.x + 30, self.rect.y - 20],[self.shots])
 
     def limit(self):
 
@@ -65,8 +72,16 @@ class SpaceShip(Obj):
         self.input()
         self.limit()
         self.move()
-       
-        
-      
 
+class Shot(Obj):
 
+    def __init__(self, img, pos, *groups):
+        super().__init__(img, pos, *groups)
+
+        self.speed = 5
+    
+    def update(self):
+        self.rect.y -= self.speed
+
+        if self.rect.y < -100:
+            self.kill()
