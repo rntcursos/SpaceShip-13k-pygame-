@@ -13,10 +13,7 @@ class Scene:
         self.fade = Fade(5)
 
     def events(self, event):
-        
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_q:
-                self.active = False
+        pass
 
     def draw(self):
         self.all_sprites.draw(self.display)

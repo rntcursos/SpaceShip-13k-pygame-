@@ -14,6 +14,12 @@ class Menu(Scene):
         self.title = Text("assets/fonts/airstrike.ttf", 50,"SpaceShip 13k", "white", [448,288])
         self.text_info = Text("assets/fonts/airstrike.ttf", 21,"Press Start To Play", "white", [508,513])
     
+    def events(self, event):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RETURN:
+                self.active = False
+        return super().events(event)
+
     def update(self):
 
         self.bg.update()
