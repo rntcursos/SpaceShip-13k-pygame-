@@ -17,7 +17,7 @@ class Game(Scene):
         self.pts = 0
         self.score_text = Text("assets/fonts/airstrike.ttf",25,"Score: ", "white", [30,30])
         self.score_pts = Text("assets/fonts/airstrike.ttf",25, "0" , "white", [130,30])
-        
+
         self.tick = 0
         self.enemy_colision = pygame.sprite.Group()
     
@@ -32,7 +32,7 @@ class Game(Scene):
             for enemy in self.enemy_colision:
                 if shot.rect.colliderect(enemy.rect):
                     shot.kill()
-                    enemy.kill()
+                    enemy.life -= 1
                     self.pts += 1
                     self.score_pts.update_text(str(self.pts))
                 
@@ -125,10 +125,22 @@ class Enemy(Obj):
         super().__init__(img, pos, *groups)
 
         self.speed = random.randint(4,6)
+        self.life = 3
+    
+    def destruction(self):
+        if self.life <= 0:
+            self.kill()
+    
+    def limits(self):
+        if self.rect.y > HEIGHT + self.image.get_height():
+            self.kill()
+    
+    def move(self):
+        self.rect.y += self.speed
 
     def update(self):
 
-        self.rect.y += self.speed
-
-        if self.rect.y > HEIGHT + self.image.get_height():
-            self.kill()
+        self.destruction()
+        self.limits()
+        self.move()
+        
