@@ -1,3 +1,4 @@
+import random
 import pygame
 from scripts.animatedbg import AnimatedBg
 from scripts.obj import Obj
@@ -11,12 +12,31 @@ class Game(Scene):
 
         self.bg = AnimatedBg("assets/menu/bg.png",[0,0],[0,-720],[self.all_sprites])
         self.spaceship = SpaceShip("assets/nave/nave0.png",[600,600],[self.all_sprites])
+
+        self.tick = 0
+
+        self.enemy_colision = pygame.sprite.Group()
     
+    def spaw_enemy(self):
+        self.tick += 1
+        if self.tick > 60:
+            self.tick = 0
+            Enemy("assets/nave/enemy0.png",[random.randint(100,1180), -100], [self.all_sprites, self.enemy_colision])
+    
+    def colision(self):
+        for shot in self.spaceship.shots:
+            for enemy in self.enemy_colision:
+                if shot.rect.colliderect(enemy.rect):
+                    shot.kill()
+                    enemy.kill()
+
     def update(self):
         self.spaceship.shots.draw(self.display)
         self.spaceship.shots.update()
+        self.colision()
         self.bg.update()
         self.spaceship.input()
+        self.spaw_enemy()
         return super().update()
 
 
@@ -29,6 +49,8 @@ class SpaceShip(Obj):
         self.speed = 5
 
         self.shots = pygame.sprite.Group()
+
+        self.ticks = 0
 
     def input(self):
 
@@ -49,7 +71,10 @@ class SpaceShip(Obj):
             self.direction.x = 0
         
         if key[pygame.K_SPACE]:
-            Shot("assets/nave/tiro.png",[self.rect.x + 30, self.rect.y - 20],[self.shots])
+            self.ticks += 1
+            if self.ticks > 30:
+                self.ticks = 0
+                Shot("assets/nave/tiro.png",[self.rect.x + 30, self.rect.y - 20],[self.shots])
 
     def limit(self):
 
@@ -84,4 +109,18 @@ class Shot(Obj):
         self.rect.y -= self.speed
 
         if self.rect.y < -100:
+            self.kill()
+
+class Enemy(Obj):
+
+    def __init__(self, img, pos, *groups):
+        super().__init__(img, pos, *groups)
+
+        self.speed = random.randint(4,6)
+
+    def update(self):
+
+        self.rect.y += self.speed
+
+        if self.rect.y > HEIGHT + self.image.get_height():
             self.kill()
