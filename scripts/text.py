@@ -11,9 +11,13 @@ class Text:
         self.position = pos
         self.text_alpha = 255
         self.alpha_speed = 5
+        self.color = color
 
     def draw(self):
         self.display.blit(self.text, self.position)
+    
+    def update_text(self, text):
+        self.text = self.font.render(text, True,self.color).convert_alpha()
 
     def drawFade(self):
 

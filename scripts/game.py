@@ -4,6 +4,7 @@ from scripts.animatedbg import AnimatedBg
 from scripts.obj import Obj
 from scripts.scene import Scene
 from scripts.settings import *
+from scripts.text import Text
 
 class Game(Scene):
 
@@ -13,8 +14,11 @@ class Game(Scene):
         self.bg = AnimatedBg("assets/menu/bg.png",[0,0],[0,-720],[self.all_sprites])
         self.spaceship = SpaceShip("assets/nave/nave0.png",[600,600],[self.all_sprites])
 
+        self.pts = 0
+        self.score_text = Text("assets/fonts/airstrike.ttf",25,"Score: ", "white", [30,30])
+        self.score_pts = Text("assets/fonts/airstrike.ttf",25, "0" , "white", [130,30])
+        
         self.tick = 0
-
         self.enemy_colision = pygame.sprite.Group()
     
     def spaw_enemy(self):
@@ -29,7 +33,9 @@ class Game(Scene):
                 if shot.rect.colliderect(enemy.rect):
                     shot.kill()
                     enemy.kill()
-
+                    self.pts += 1
+                    self.score_pts.update_text(str(self.pts))
+                
     def update(self):
         self.spaceship.shots.draw(self.display)
         self.spaceship.shots.update()
@@ -37,6 +43,8 @@ class Game(Scene):
         self.bg.update()
         self.spaceship.input()
         self.spaw_enemy()
+        self.score_text.draw()
+        self.score_pts.draw()
         return super().update()
 
 
