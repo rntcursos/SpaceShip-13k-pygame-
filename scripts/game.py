@@ -18,15 +18,40 @@ class Game(Scene):
         self.score_text = Text("assets/fonts/airstrike.ttf",25,"Score: ", "white", [30,30])
         self.score_pts = Text("assets/fonts/airstrike.ttf",25, "0" , "white", [130,30])
 
+        self.life1 = Obj("assets/hud/nave.png",[30,60], [self.all_sprites])
+        self.life2 = Obj("assets/hud/nave.png",[70,60], [self.all_sprites])
+        self.life3 = Obj("assets/hud/nave.png",[110,60], [self.all_sprites])
+
         self.tick = 0
         self.enemy_colision = pygame.sprite.Group()
+        self.powerups = pygame.sprite.Group()
+
+        self.music = pygame.mixer.Sound("assets/sounds/bg.ogg")
+        self.music.play(-1)
+    
+    def hud(self):
+        if self.spaceship.life == 2:
+            self.life3.kill()
+        elif self.spaceship.life == 1:
+            self.life2.kill()
+        elif self.spaceship.life == 0:
+            self.life1.kill()
     
     def spaw_enemy(self):
         self.tick += 1
-        if self.tick > 60:
+        if self.tick == 60:
+            BigShip("assets/nave/enemy3_0.png",[random.randint(100,1180), -100], [self.all_sprites, self.enemy_colision])
+        elif self.tick == 180:
+            MediumShip("assets/nave/enemy2_0.png",[random.randint(100,1180), -100], [self.all_sprites, self.enemy_colision])
+            MediumShip("assets/nave/enemy2_0.png",[random.randint(100,1180), -100], [self.all_sprites, self.enemy_colision])
+        elif self.tick == 270:
+            SmallShip("assets/nave/enemy0.png",[random.randint(100,1180), -100], [self.all_sprites, self.enemy_colision])
+            SmallShip("assets/nave/enemy0.png",[random.randint(100,1180), -100], [self.all_sprites, self.enemy_colision])
+            SmallShip("assets/nave/enemy0.png",[random.randint(100,1180), -100], [self.all_sprites, self.enemy_colision])
+            SmallShip("assets/nave/enemy0.png",[random.randint(100,1180), -100], [self.all_sprites, self.enemy_colision])
+            PowerUp("assets/nave/powerup0.png", [random.randint(100,1180), -100], [self.all_sprites, self.powerups])
             self.tick = 0
-            Enemy("assets/nave/enemy0.png",[random.randint(100,1180), -100], [self.all_sprites, self.enemy_colision])
-    
+
     def colision(self):
         for shot in self.spaceship.shots:
             for enemy in self.enemy_colision:
@@ -35,6 +60,34 @@ class Game(Scene):
                     enemy.life -= 1
                     self.pts += 1
                     self.score_pts.update_text(str(self.pts))
+
+                    sound = pygame.mixer.Sound("assets/sounds/block.ogg")
+                    sound.play()
+
+                    if enemy.life <= 0:
+                        x = enemy.rect.x + enemy.image.get_width() / 2
+                        y = enemy.rect.y + enemy.image.get_height() / 2
+                        Explosion("assets/explosion/0.png",[x, y], [self.all_sprites])
+        
+        for enemy in self.enemy_colision:
+            if self.spaceship.rect.colliderect(enemy.rect):
+                enemy.kill()
+                self.spaceship.life -= 1
+                self.spaceship.level = 1
+                sound = pygame.mixer.Sound("assets/sounds/damage.ogg")
+                sound.play()
+        
+        for powerup in self.powerups:
+            if self.spaceship.rect.colliderect(powerup.rect):
+                powerup.kill()
+                self.spaceship.level += 1
+                sound = pygame.mixer.Sound("assets/sounds/levelup.ogg")
+                sound.play()
+
+    def gameover(self):
+        if self.spaceship.life <= 0:
+            self.music.stop()
+            self.active = False
                 
     def update(self):
         self.spaceship.shots.draw(self.display)
@@ -45,6 +98,8 @@ class Game(Scene):
         self.spaw_enemy()
         self.score_text.draw()
         self.score_pts.draw()
+        self.gameover()
+        self.hud()
         return super().update()
 
 
@@ -55,9 +110,9 @@ class SpaceShip(Obj):
 
         self.direction = pygame.math.Vector2()
         self.speed = 5
-
+        self.level = 1
+        self.life = 3
         self.shots = pygame.sprite.Group()
-
         self.ticks = 0
 
     def input(self):
@@ -82,7 +137,28 @@ class SpaceShip(Obj):
             self.ticks += 1
             if self.ticks > 30:
                 self.ticks = 0
-                Shot("assets/nave/tiro.png",[self.rect.x + 30, self.rect.y - 20],[self.shots])
+                sound = pygame.mixer.Sound("assets/sounds/shot.ogg")
+                sound.play()
+                if self.level == 1:
+                    Shot("assets/tiros/tiro1.png",[self.rect.x + 30, self.rect.y - 20],[self.shots])
+                elif self.level == 2:
+                    Shot("assets/tiros/tiro2.png",[self.rect.x + 30, self.rect.y - 20],[self.shots])
+                elif self.level == 3:
+                    Shot("assets/tiros/tiro3.png",[self.rect.x + 30, self.rect.y - 20],[self.shots])
+                elif self.level == 4:
+                    Shot("assets/tiros/tiro1.png",[self.rect.x, self.rect.y - 20],[self.shots])
+                    Shot("assets/tiros/tiro1.png",[self.rect.x + 60, self.rect.y - 20],[self.shots])
+                elif self.level == 5:
+                    Shot("assets/tiros/tiro2.png",[self.rect.x, self.rect.y - 20],[self.shots])
+                    Shot("assets/tiros/tiro2.png",[self.rect.x + 60, self.rect.y - 20],[self.shots])
+                elif self.level == 6:
+                    Shot("assets/tiros/tiro3.png",[self.rect.x, self.rect.y - 20],[self.shots])
+                    Shot("assets/tiros/tiro3.png",[self.rect.x + 60, self.rect.y - 20],[self.shots])
+                else:
+                    Shot("assets/tiros/tiro2.png",[self.rect.x, self.rect.y - 20],[self.shots])
+                    Shot("assets/tiros/tiro2.png",[self.rect.x + 20, self.rect.y - 20],[self.shots])
+                    Shot("assets/tiros/tiro2.png",[self.rect.x + 40, self.rect.y - 20],[self.shots])
+                    Shot("assets/tiros/tiro2.png",[self.rect.x + 60, self.rect.y - 20],[self.shots])
 
     def limit(self):
 
@@ -124,8 +200,8 @@ class Enemy(Obj):
     def __init__(self, img, pos, *groups):
         super().__init__(img, pos, *groups)
 
-        self.speed = random.randint(4,6)
-        self.life = 3
+        self.speed = 1
+        self.life = 1
     
     def destruction(self):
         if self.life <= 0:
@@ -139,8 +215,69 @@ class Enemy(Obj):
         self.rect.y += self.speed
 
     def update(self):
-
         self.destruction()
         self.limits()
         self.move()
         
+class SmallShip(Enemy):
+
+    def __init__(self, img, pos, *groups):
+        super().__init__(img, pos, *groups)
+
+        self.speed = 6
+        self.life = 1
+    
+    def update(self):
+        self.animation(8,3,"assets/nave/enemy")
+        return super().update()
+
+class MediumShip(Enemy):
+
+    def __init__(self, img, pos, *groups):
+        super().__init__(img, pos, *groups)
+
+
+        self.speed = 4
+        self.life = 2
+    
+    def update(self):
+        self.animation(8,3,"assets/nave/enemy2_")
+        return super().update()
+
+class BigShip(Enemy):
+
+    def __init__(self, img, pos, *groups):
+        super().__init__(img, pos, *groups)
+
+        self.speed = 1
+        self.life = 10
+    
+    def update(self):
+        self.animation(16,3,"assets/nave/enemy3_")
+        return super().update()
+
+class PowerUp(Enemy):
+
+    def __init__(self, img, pos, *groups):
+        super().__init__(img, pos, *groups)
+
+        self.speed = 2
+    
+    def update(self):
+        self.animation(16,3,"assets/nave/powerup")
+        return super().update()
+
+class Explosion(Obj):
+
+    def __init__(self, img, pos, *groups):
+        super().__init__(img, pos, *groups)
+
+        self.ticks = 0
+    
+    def update(self):
+        self.animation(5,5,"assets/explosion/")
+
+        self.ticks += 1
+        if self.ticks > 25:
+            self.kill()
+        return super().update()
